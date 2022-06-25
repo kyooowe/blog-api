@@ -25,4 +25,4 @@ const blogRoutes = require('./routes/blogRoutes')
 app.use('/api/blog', blogRoutes)
 //#endregion
 
-app.listen(3001, () => console.log('Server started'))
+app.listen(process.env.PORT || 3001, () => console.log('Server started'))
