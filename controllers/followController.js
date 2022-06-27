@@ -1,6 +1,5 @@
 const express = require('express')
 const FollowModel = require('../models/followUserModel')
-const mongoose = require('mongoose')
 const AuthModel = require('../models/authModel')
 
 //#region Response

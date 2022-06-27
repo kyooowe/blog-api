@@ -1,5 +1,6 @@
 const express = require('express')
 const BlogPostModel = require('../models/blogPostModel')
+const BlockModel = require('../models/blockUserModel')
 
 //#region Response
 const response = (isError, data, type, msg,) => {
@@ -16,8 +17,20 @@ const response = (isError, data, type, msg,) => {
 //#region Get
 const getBlogs = async (req, res) => {
     try {
+        const currentUserId = req.headers.userid
+
+        let absoluteBlogList = []
         const blogs = await BlogPostModel.find({ isActive: true })
-        res.status(200).json(response(false, blogs, 'array', 'Success!'))
+        const blockList = await BlockModel.find({ blockById: currentUserId })
+
+        for await (const blog of blogs) {
+            const checkIfContainsBlockUserBlog = blockList.filter((x) => x.blockId === blog.createdBy)
+
+            if (checkIfContainsBlockUserBlog.length === 0)
+                absoluteBlogList.push(blog)
+        }
+
+        res.status(200).json(response(false, absoluteBlogList, 'array', 'Success!'))
     } catch (error) {
         res.status(400).json(response(true, null, error))
     }
@@ -28,16 +41,26 @@ const getUserBlog = async (req, res) => {
         const blogs = await BlogPostModel.find({ createdBy: req.params.id, isActive: true })
         res.status(200).json(response(false, blogs, 'array', 'Success!'))
     } catch (error) {
-        res.status(400).json(response(true, null,  error))
+        res.status(400).json(response(true, null, error))
     }
 }
 
-const getUserBlogRaw = async (userId) => {
+const getUserBlogRaw = async (req) => {
     try {
-        const blogs = await BlogPostModel.find({ createdBy: `${userId}`, isActive: true })
+        const currentUserId = req.headers.userid
 
-        console.log(blogs)
-        return blogs
+        let absoluteBlogList = []
+        const blogs = await BlogPostModel.find({ isActive: true })
+        const blockList = await BlockModel.find({ blockById: currentUserId })
+
+        for await (const blog of blogs) {
+            const checkIfContainsBlockUserBlog = blockList.filter((x) => x.blockId === blog.createdBy)
+
+            if (checkIfContainsBlockUserBlog.length === 0)
+                absoluteBlogList.push(blog)
+        }
+
+        return absoluteBlogList
     } catch (error) {
         return []
     }
@@ -56,7 +79,7 @@ const createBlog = async (req, res) => {
     try {
 
         await blog.save()
-        res.status(200).json(response(false, await getUserBlogRaw(req.body.userId), 'array', 'Blog Creation Success!'))
+        res.status(200).json(response(false, await getUserBlogRaw(req), 'array', 'Blog Creation Success!'))
     } catch (error) {
         res.status(400).json(response(true, null, error))
     }
@@ -70,7 +93,7 @@ const updateBlog = async (req, res) => {
         const updatedBlog = await BlogPostModel.findByIdAndUpdate(id, update, {
             new: true
         })
-        res.status(200).json(response(false, await getUserBlogRaw(req.body.userId), 'array', 'Blog Update Success!'))
+        res.status(200).json(response(false, await getUserBlogRaw(req), 'array', 'Blog Update Success!'))
     } catch (error) {
         res.status(400).json(response(true, null, error))
     }
@@ -85,7 +108,7 @@ const deleteBlog = async (req, res) => {
         await BlogPostModel.findByIdAndUpdate(id, update, {
             new: true
         })
-        res.status(200).json(response(false, await getUserBlogRaw(userId), 'array', 'Blog Delete Success!'))
+        res.status(200).json(response(false, await getUserBlogRaw(req), 'array', 'Blog Delete Success!'))
     } catch (error) {
         res.status(400).json(response(true, null, error))
     }

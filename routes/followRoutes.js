@@ -4,6 +4,9 @@ const followController = require('../controllers/followController')
 
 //#region Action
 router.post('/user', followController.followOrUnfollowUser)
+//#endregion
+
+//#region Get
 router.get('/list/:userId', followController.followerList)
 //#endregion
 
