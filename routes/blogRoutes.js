@@ -3,6 +3,7 @@ const router = express.Router()
 const blogController = require('../controllers/blogControllers')
 
 //#region Get
+router.get('/get/all', blogController.getBlogs)
 router.get('/get/all/:id', blogController.getUserBlog)
 //#endregion
 

@@ -14,12 +14,21 @@ const response = (isError, data, type, msg,) => {
 //#endregion
 
 //#region Get
+const getBlogs = async (req, res) => {
+    try {
+        const blogs = await BlogPostModel.find({ isActive: true })
+        res.status(200).json(response(false, blogs, 'array', 'Success!'))
+    } catch (error) {
+        res.status(400).json(response(true, null, error))
+    }
+}
+
 const getUserBlog = async (req, res) => {
     try {
         const blogs = await BlogPostModel.find({ createdBy: req.params.id, isActive: true })
-        res.status(200).json(response(false, blogs, 'Success!'))
+        res.status(200).json(response(false, blogs, 'array', 'Success!'))
     } catch (error) {
-        res.status(400).json(response(true, null, error))
+        res.status(400).json(response(true, null,  error))
     }
 }
 
@@ -84,6 +93,7 @@ const deleteBlog = async (req, res) => {
 //#endregion
 
 module.exports = {
+    getBlogs,
     getUserBlog,
     createBlog,
     updateBlog,

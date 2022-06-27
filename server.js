@@ -25,4 +25,9 @@ const blogRoutes = require('./routes/blogRoutes')
 app.use('/api/blog', blogRoutes)
 //#endregion
 
+//#region Follow Routes
+const followRoutes = require('./routes/followRoutes')
+app.use('/api/follow', followRoutes)
+//#endregion
+
 app.listen(process.env.PORT || 3001, () => console.log('Server started'))

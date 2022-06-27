@@ -18,6 +18,7 @@ router.post('/register', async (req, res) => {
 
     const auth = new AuthModel({
         fullName: req.body.fullName,
+        email: req.body.email,
         userName: req.body.username,
         password: req.body.password,
     })
