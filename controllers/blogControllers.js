@@ -21,16 +21,18 @@ const getBlogs = async (req, res) => {
         const currentUserId = req.headers.userid
 
         let absoluteBlogList = []
-        const blogs = await BlogPostModel.find({ isActive: true })
+        const blogs = await BlogPostModel.find({ isActive: true }).sort({ 'dateCreated': 'desc' }).exec()
         const blockListByCurrentUser = await BlockModel.find({ blockById: currentUserId }) // The user I blocked
         const blockListOfOtherUserWithUrId = await BlockModel.find({ blockId: currentUserId }) // Other users that blocked me
+
+        console.log(blogs)
 
         for await (const blog of blogs) {
 
             const removeUserBlogsIBlockList = blockListByCurrentUser.filter((x) => x.blockId === blog.createdBy) // Remove all user blogs that I blocked
             const removeUserBlogsThatBlockMeList = blockListOfOtherUserWithUrId.filter((x) => x.blockById === blog.createdBy)
 
-            if(removeUserBlogsIBlockList.length === 0 && removeUserBlogsThatBlockMeList.length === 0)
+            if (removeUserBlogsIBlockList.length === 0 && removeUserBlogsThatBlockMeList.length === 0)
                 absoluteBlogList.push(blog)
         }
 
@@ -42,7 +44,7 @@ const getBlogs = async (req, res) => {
 
 const getUserBlog = async (req, res) => {
     try {
-        const blogs = await BlogPostModel.find({ createdBy: req.params.id, isActive: true })
+        const blogs = await BlogPostModel.find({ createdBy: req.params.id, isActive: true }).sort({ 'dateCreated': 'desc' }).exec()
         res.status(200).json(response(false, blogs, 'array', 'Success!'))
     } catch (error) {
         res.status(400).json(response(true, null, error))
@@ -54,7 +56,7 @@ const getUserBlogRaw = async (req) => {
         const currentUserId = req.headers.userid
 
         let absoluteBlogList = []
-        const blogs = await BlogPostModel.find({ isActive: true })
+        const blogs = await BlogPostModel.find({ isActive: true }).sort({ 'dateCreated': 'desc' }).exec()
         const blockList = await BlockModel.find({ blockById: currentUserId })
 
         for await (const blog of blogs) {
@@ -76,7 +78,7 @@ const createBlog = async (req, res) => {
 
     const blog = new BlogPostModel({
         content: req.body.content,
-        imagePath: req.body.image === null ? '' : req.body.image.fileName,
+        imagePath: '',
         createdBy: req.body.userId,
         createdByFullName: req.body.createdByFullName
     })
@@ -109,8 +111,14 @@ const createBlogWithImg = async (req, res) => {
 }
 
 const updateBlog = async (req, res) => {
+
     const id = req.body._id
-    const update = { content: req.body.content }
+    let update = {}
+
+    if (req.body.imageRetain)
+        update = { content: req.body.content }
+    else
+        update = { content: req.body.content, imagePath: '' }
 
     try {
         const updatedBlog = await BlogPostModel.findByIdAndUpdate(id, update, {
