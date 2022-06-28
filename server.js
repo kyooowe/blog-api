@@ -2,11 +2,14 @@ const express = require('express')
 const app = express()
 const cors = require('cors')
 const mongoose = require('mongoose')
-
+const bodyParser = require('body-parser')
 require('dotenv').config()
 
 app.use(cors())
 app.use(express.json())
+
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.json())
 
 //#region Database
 mongoose.connect(process.env.DATABASE_URL)
@@ -33,6 +36,8 @@ app.use('/api/follow', followRoutes)
 //#region Block Routes
 const blockRoutes = require('./routes/blockRoutes')
 app.use('/api/block', blockRoutes)
-//#endregion
 
+//#endregion
+app.use(express.static('public'))
+app.use(express.static('uploads'))
 app.listen(process.env.PORT || 3001, () => console.log('Server started'))

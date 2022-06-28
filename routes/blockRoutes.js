@@ -4,6 +4,8 @@ const blockController = require('../controllers/blockController')
 
 //#region Action
 router.post('/user', blockController.blockUser)
+router.post('/user/unblock', blockController.unBlockUser)
+
 //#endregion
 
 //#region Get
